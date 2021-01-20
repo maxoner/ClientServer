@@ -44,7 +44,8 @@ class Storage(defaultdict):
         triples = sorted(
             [(k,v,t) for k in self.keys() for t, v in self[k].items()], 
             key=itemgetter(2))
-        return '\n'.join([f"{k} {v} {t}" for k,v,t in triples])
+        resp = '\n'.join([f"{k} {v} {t}" for k,v,t in triples])
+        return '\n' + resp if resp else '' 
     
 
 
@@ -95,7 +96,7 @@ def handle_get(request):
     _, key, _ = BY_SPACE.split(request)
 
     if key == '*':
-        response = "ok\n" + f"{storage}" + "\n\n"
+        response = "ok" + f"{storage}" + "\n\n"
     else:
         cont = storage[key] 
         if (cont):
@@ -112,23 +113,18 @@ def raise_error():
  
 def run_server(host, port):
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(loop.create_task(_run_server(host, port, loop)))
-
-async def _run_server(host, port, loop):
-    """
-    Запускает сервер, который при соединении с ним запускает 
-    корутину handler, передавая ей объекты reader 
-    и writer для асинхронного ввода вывода.
-    """
-    server = await asyncio.start_server(
+    coro = asyncio.start_server(
                     handle_request, host, 
-                    port, family=socket.AF_INET, loop=loop)
+                    port, loop=loop)
 
+    server = loop.run_until_complete(coro)
     addr = server.sockets[0].getsockname()
     print(f'Starting server on {addr}')
-
-    async with server:
-        await server.serve_forever()
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        print('Stopping server')
+        server.close()
 
 
 if __name__ == '__main__':
@@ -137,5 +133,4 @@ if __name__ == '__main__':
     except Exception:
         hostport = input('host:port ::')
         host, port = hostport.split(':')
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(loop.create_task(_run_server(host, port, loop)))
+    run_server(host, port )
