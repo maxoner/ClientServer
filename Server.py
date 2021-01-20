@@ -112,7 +112,7 @@ def raise_error():
  
 def run_server(host, port):
     loop = asyncio.get_event_loop()
-    loop.run_forever(asyncio.Task(_run_server(host, port, loop)))
+    loop.run_until_complete(loop.create_task(_run_server(host, port, loop)))
 
 async def _run_server(host, port, loop):
     """
@@ -137,4 +137,5 @@ if __name__ == '__main__':
     except Exception:
         hostport = input('host:port ::')
         host, port = hostport.split(':')
-        run_server(host, port)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(loop.create_task(_run_server(host, port, loop)))
