@@ -97,7 +97,8 @@ def handle_get(request):
     if key == '*':
         response = "ok\n" + f"{storage}" + "\n\n"
     else:
-        if (cont := storage[key]):
+        cont = storage[key] 
+        if (cont):
             response = "ok\n" + f"{cont}"  + "\n\n"
         else:
             response = "ok\n\n"
@@ -133,4 +134,4 @@ if __name__ == '__main__':
     except Exception:
         hostport = input('host:port ::')
         host, port = hostport.split(':')
-    asyncio.run(run_server(host, port))
+    asyncio.run_until_complete(asyncio.Task(run_server(host, port)))
