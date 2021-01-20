@@ -110,8 +110,11 @@ def handle_get(request):
 def raise_error():
     return "error\nwrong command\n\n" 
  
+def run_server(host, port):
+    loop = asyncio.get_event_loop()
+    loop.run_forever(asyncio.Task(_run_server(host, port, loop)))
 
-async def run_server(host, port):
+async def _run_server(host, port, loop):
     """
     Запускает сервер, который при соединении с ним запускает 
     корутину handler, передавая ей объекты reader 
@@ -119,7 +122,7 @@ async def run_server(host, port):
     """
     server = await asyncio.start_server(
                     handle_request, host, 
-                    port, family=socket.AF_INET)
+                    port, family=socket.AF_INET, loop=loop)
 
     addr = server.sockets[0].getsockname()
     print(f'Starting server on {addr}')
@@ -134,5 +137,4 @@ if __name__ == '__main__':
     except Exception:
         hostport = input('host:port ::')
         host, port = hostport.split(':')
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(asyncio.Task(run_server(host, port)))
+        run_server(host, port)
