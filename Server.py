@@ -134,4 +134,5 @@ if __name__ == '__main__':
     except Exception:
         hostport = input('host:port ::')
         host, port = hostport.split(':')
-    asyncio.run_until_complete(asyncio.Task(run_server(host, port)))
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(asyncio.Task(run_server(host, port)))
