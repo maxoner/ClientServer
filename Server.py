@@ -5,7 +5,6 @@ import asyncio
 from collections import defaultdict
 from operator import itemgetter
 import re
-import socket
 import sys
 
 #TODO: обвешать тестами с использованием моего класса Client.
@@ -21,8 +20,9 @@ class DictInStorage(dict):
     def __init__(self, key, *args, **kwargs):
         self.upperkey = key
         super().__init__(*args, **kwargs)
+
     def __str__(self):
-        return '\n'.join([f"{self.upperkey} {val} {time}" for time, val in self.items() ])
+        return '\n'.join([f"{self.upperkey} {val} {time}" for time, val in self.items()])
 
         
 class Storage(defaultdict):
@@ -46,7 +46,6 @@ class Storage(defaultdict):
             key=itemgetter(2))
         resp = '\n'.join([f"{k} {v} {t}" for k,v,t in triples])
         return '\n' + resp if resp else '' 
-    
 
 
 storage = Storage()
@@ -60,7 +59,10 @@ RESPONSE_TEMPLATE = "{}\n{}\n\n"
 
 
 #---------------==========Сервер===========-------------------------------
-async def handle_request(reader, writer, buff=4096, cd='utf8'):
+async def handle_request(
+    reader: asyncio.StreamReader, writer: asyncio.StreamWriter,
+    buff=4096, cd='utf8') -> None:
+
     while True:
         request = await reader.read(buff)
         request = request.decode(cd)
@@ -85,14 +87,14 @@ async def handle_request(reader, writer, buff=4096, cd='utf8'):
     writer.close()
 
 
-def handle_put(request):
+def handle_put(request: str) -> str:
     _, key, value, timestamp, _ = BY_SPACE.split(request)
     storage[key][int(timestamp)] = float(value)
     response = 'ok\n\n' 
     return response 
 
 
-def handle_get(request):
+def handle_get(request: str) -> str:
     _, key, _ = BY_SPACE.split(request)
 
     if key == '*':
@@ -108,10 +110,11 @@ def handle_get(request):
     return response 
 
 
-def raise_error():
+def raise_error() -> str:
     return "error\nwrong command\n\n" 
- 
-def run_server(host, port):
+
+
+def run_server(host: str, port: int) -> None:
     loop = asyncio.get_event_loop()
     coro = asyncio.start_server(
                     handle_request, host, 

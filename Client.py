@@ -51,7 +51,8 @@ class Client:
     def put(self, key, value, timestamp=None):
         put_req = self._put_template.format(
             key, value, 
-            timestamp if timestamp else int(time())) 
+            timestamp if timestamp else int(time())
+        )
         self._send_request(put_req)
         if self._recv_response() != "ok\n\n":
             raise ClientError("load fail") 
